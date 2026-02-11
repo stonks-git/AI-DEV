@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.key
+
+# Claude Code cache
+.claude/cache/
+.claude/debug/
+.claude/file-history/
+.claude/history.jsonl
+.claude/paste-cache/
+.claude/plans/
+.claude/session-env/
+.claude/shell-snapshots/
+.claude/tasks/
+.claude/todos/
+.claude/image-cache/
+.claude/stats-cache.json
+.claude/.credentials.json
