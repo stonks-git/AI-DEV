@@ -14,8 +14,12 @@ STATE_DIR = BASE_DIR / "state"
 
 
 ALLOWED_TASK_STATUSES = {"todo", "doing", "done", "blocked", "skipped"}
-ALLOWED_DECISION_STATUSES = {"proposed", "accepted", "rejected"}
+ALLOWED_DECISION_STATUSES = {"proposed", "accepted", "rejected", "superseded"}
 ALLOWED_QUESTION_STATUSES = {"open", "answered", "dropped"}
+ALLOWED_DEVLOG_EVENTS = {
+    "feature", "bugfix", "refactor", "kb_update", "decision",
+    "handoff", "verification", "human_review", "blueprint", "dj_entry",
+}
 
 
 def _read_json(path: Path) -> Any:
@@ -83,6 +87,49 @@ def validate_charter(charter: Any) -> list[ValidationIssue]:
         success_criteria = project.get("success_criteria")
         if isinstance(success_criteria, list) and len(success_criteria) == 0:
             issues.append(ValidationIssue("warning", "charter.project.success_criteria: empty (no objective 'done')"))
+
+        tag_taxonomy = project.get("tag_taxonomy")
+        if tag_taxonomy is None:
+            issues.append(ValidationIssue("warning", "charter.project.tag_taxonomy: missing (tag routing disabled)"))
+        elif not isinstance(tag_taxonomy, list):
+            issues.append(ValidationIssue("error", "charter.project.tag_taxonomy: expected list"))
+        elif len(tag_taxonomy) == 0:
+            issues.append(ValidationIssue("warning", "charter.project.tag_taxonomy: empty"))
+        else:
+            for i, tag in enumerate(tag_taxonomy):
+                if not _is_nonempty_str(tag):
+                    issues.append(ValidationIssue("error", f"charter.project.tag_taxonomy[{i}]: must be non-empty string"))
+
+    return issues
+
+
+def validate_devlog(devlog_path: Path) -> list[ValidationIssue]:
+    issues: list[ValidationIssue] = []
+    if not devlog_path.exists():
+        return issues
+
+    text = devlog_path.read_text(encoding="utf-8")
+    if not text.strip():
+        return issues
+
+    for line_num, line in enumerate(text.splitlines(), 1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            entry = json.loads(stripped)
+        except json.JSONDecodeError:
+            issues.append(ValidationIssue("error", f"devlog line {line_num}: invalid JSON"))
+            continue
+        if not isinstance(entry, dict):
+            issues.append(ValidationIssue("error", f"devlog line {line_num}: expected object"))
+            continue
+        for key in ("ts", "event", "summary"):
+            if key not in entry:
+                issues.append(ValidationIssue("error", f"devlog line {line_num}: missing `{key}`"))
+        event = entry.get("event")
+        if isinstance(event, str) and event not in ALLOWED_DEVLOG_EVENTS:
+            issues.append(ValidationIssue("warning", f"devlog line {line_num}: unknown event `{event}`"))
 
     return issues
 
@@ -268,21 +315,12 @@ def _format_issues(issues: Iterable[ValidationIssue]) -> str:
 def cmd_validate(_: argparse.Namespace) -> int:
     charter = _read_json(STATE_DIR / "charter.json")
     roadmap = _read_json(STATE_DIR / "roadmap.json")
-    evidence_path = STATE_DIR / "evidence.json"
-    evidence = None
-    if evidence_path.exists():
-        evidence = _read_json(evidence_path)
 
     issues = []
     issues.extend(validate_charter(charter))
     roadmap_issues, _ = validate_roadmap(roadmap)
     issues.extend(roadmap_issues)
-    if evidence is not None and not isinstance(evidence, dict):
-        issues.append(ValidationIssue("error", "evidence: expected object with key `items`"))
-    elif isinstance(evidence, dict):
-        items = evidence.get("items")
-        if not isinstance(items, list):
-            issues.append(ValidationIssue("error", "evidence.items: expected list"))
+    issues.extend(validate_devlog(STATE_DIR / "devlog.ndjson"))
 
     errors = [i for i in issues if i.level == "error"]
     if issues:

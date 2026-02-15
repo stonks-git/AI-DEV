@@ -1,22 +1,13 @@
-# Supervisor Handoff
+# Handoff
 
-> **READ THIS FIRST.** You are the supervisor (queen agent) for this project.
->
-> **Reading order (MANDATORY):**
-> 1. This file (handoff.md) - bootstrap loader
-> 2. `prompts/supervisor.md` - your supervisor contract
-> 3. `state/charter.json` - project constraints (MANDATORY)
-> 4. `KB/KB_index.md` - context router (load files per `Load` column)
-> 5. `python3 taskmaster.py ready` - available tasks
-> 6. Sections below - previous session context
->
-> **DO NOT explore the whole codebase.** Delegate exploration to workers (Task tool with subagent_type=Explore).
+> Session context for the supervisor agent.
+> **Bootstrap order -> see CLAUDE.md** (single origin for the whole framework).
 
 ---
 
 ## Previous Sessions
 
-_(No sessions yet. Fill this section after each work session.)_
+_(No sessions yet. Fill after each work session.)_
 
 <!--
 ### SESSION <date> (<number>) - <TITLE>
@@ -38,7 +29,7 @@ _(No sessions yet. Fill this section after each work session.)_
 
 ## What is this project?
 
-_(Fill after bootstrap. One paragraph describing the project.)_
+_(Fill after bootstrap. One paragraph.)_
 
 ---
 
@@ -48,44 +39,11 @@ _(Fill after bootstrap. One paragraph describing the project.)_
 |---------|--------|
 | _(none)_ | - |
 
-## Docker/Prod Status
-
-_(Fill if applicable. Server IPs, container status, deploy state.)_
-
----
-
 ## Blockers or open questions
 
 | Blocker/Question | Status |
 |------------------|--------|
-| (none) | - |
-
----
-
-## Useful commands (copy-paste ready)
-
-```bash
-# Validate state
-python3 taskmaster.py validate
-
-# Ready tasks
-python3 taskmaster.py ready
-
-# Run checks (customize per project)
-# python manage.py check
-# npm test
-# cargo test
-```
-
----
-
-## Checklist before handoff
-
-- [ ] Updated task statuses in handoff
-- [ ] Completed current session section above
-- [ ] devlog updated (+1 entry per significant change)
-- [ ] **Kept only last 3 sessions** (older ones archived in git)
-- [ ] KB updated if code was changed
+| _(none)_ | - |
 
 ---
 
@@ -104,3 +62,15 @@ _(Fill after each task completion)_
 ```
 MEMORY_MARKER: <timestamp> | <last_task_completed> | <next_task>
 ```
+
+---
+
+## Before updating this file
+
+- [ ] devlog entry added for each change
+- [ ] Session section filled (what was done, verifications, files touched)
+- [ ] **KB updated** if code was modified + `kb_update` devlog entry
+- [ ] **Blueprint updated** if scaffolding/architecture changed + `blueprint` devlog entry
+- [ ] **Decision Journal entry** if any decision was superseded + `dj_entry` devlog entry
+- [ ] `python3 taskmaster.py validate` exits 0
+- [ ] Keep only last 3 sessions (older ones archived in git)

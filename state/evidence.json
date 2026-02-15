@@ -1,8 +1,0 @@
-{
-  "meta": {
-    "policy": "pointer-only",
-    "schema_version": 2,
-    "notes": "No copied citations/quotes; use audit_commands + anchors to verify."
-  },
-  "items": []
-}

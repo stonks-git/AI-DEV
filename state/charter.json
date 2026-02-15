@@ -7,6 +7,7 @@
     "success_criteria": [],
     "non_goals": [],
     "stakeholders": ["human_owner"],
+    "tag_taxonomy": ["arch", "scaffold", "decisions"],
     "constraints": {
       "time": "",
       "budget": "",
@@ -17,15 +18,9 @@
       "must_use": [],
       "must_avoid": [],
       "deploy_policy": {
-        "rule": "Test locally BEFORE any production deploy",
-        "steps": [
-          "1. Implement code locally",
-          "2. Run checks/tests locally",
-          "3. Manual test (browser/CLI)",
-          "4. User approval for deploy",
-          "5. Deploy to production"
-        ],
-        "forbidden": "Deploy directly to production without local testing"
+        "rule": "",
+        "steps": [],
+        "forbidden": ""
       }
     }
   },
