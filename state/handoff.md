@@ -6,8 +6,9 @@
 > 1. This file (handoff.md) - bootstrap loader
 > 2. `prompts/supervisor.md` - your supervisor contract
 > 3. `state/charter.json` - project constraints (MANDATORY)
-> 4. `python3 taskmaster.py ready` - available tasks
-> 5. Sections below - previous session context
+> 4. `KB/KB_index.md` - context router (load files per `Load` column)
+> 5. `python3 taskmaster.py ready` - available tasks
+> 6. Sections below - previous session context
 >
 > **DO NOT explore the whole codebase.** Delegate exploration to workers (Task tool with subagent_type=Explore).
 
