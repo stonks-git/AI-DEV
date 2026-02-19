@@ -1,4 +1,4 @@
-# Project Name
+# <Project Name>
 
 > Fill project description here after bootstrap.
 
@@ -23,6 +23,9 @@ When a decision changes something in the plan or blueprint: record it. Record wh
 **2. Every completed task MUST be documented before moving on.**
 After every task, run `/doc`. Document KB, implementation details, all relevant files. On every step. **Slow and precise > fast and headless.** Undocumented work is lost work.
 
+## Pre-Build Gate (NEVER SKIP)
+Before implementing ANY code change, run the **pre-build-explorer** agent first. It finds existing patterns, conventions, and reusable components so new code integrates naturally with the codebase. No coding without precedent analysis.
+
 ## Mandatory Gates (NEVER SKIP)
 **KB Gate:** Code change affecting functionality/UI/flows -> update `KB/*.md` + `kb_update` devlog entry. No KB for module? Create one. No commit without KB update.
 **Blueprint Gate:** Scaffolding/architecture change -> new version file in `KB/blueprints/` + update `BLUEPRINT_INDEX.md` pointer. No silent plan changes.
@@ -36,7 +39,8 @@ Event types: `feature`, `bugfix`, `refactor`, `kb_update`, `decision`, `handoff`
 
 ## Checkpoint
 Save progress BEFORE autocompact eats it. Trigger: 3+ files read without save, important decision, task completed.
-Actions: update `state/handoff.md` -> append devlog event -> `python3 taskmaster.py validate`.
+Actions: update `state/handoff.md` (including `MEMORY_MARKER`) -> append devlog event -> `python3 taskmaster.py validate`.
+The `MEMORY_MARKER` in handoff.md is a quick-recovery anchor: `<timestamp> | <last_task_completed> | <next_task>`. Update it after every task completion so context can be recovered after autocompact.
 
 ## Verification (before marking done)
 Task matches request. Tests/checks pass. No regressions. Minimal changes only. KB updated. Blueprint updated if plan changed. Decision Journal entry if decision changed.
@@ -63,7 +67,9 @@ Tags are defined in `state/charter.json` under `project.tag_taxonomy`. All tags 
 If you don't remember current task/recent files/decisions: **STOP.** Follow Bootstrap order above. Tell user "Context lost, re-read state." Wait for confirmation.
 
 ## Framework Structure
-- Agent prompts: `.claude/agents/`
-- Audit orchestrator: `prompts/auditors/runner.md`
+- Agent stubs: `.claude/agents/` — lightweight registration files for Claude Code. Point to full protocols in `prompts/`.
+- Full protocols: `prompts/` — portable behavior contracts. Usable by any tool, not just Claude Code.
+- Audit orchestrator: `prompts/auditors/runner.md` — manual use prompt for running full audit sequences. Not a subagent (can't call sub-subagents).
 - Supervisor contract: `prompts/supervisor.md`
 - All agents inherit this CLAUDE.md automatically.
+- Agent stub paths are relative to repository root.

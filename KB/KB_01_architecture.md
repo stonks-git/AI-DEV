@@ -12,19 +12,21 @@ _(Project architecture summary goes here after bootstrap.)_
 > **Scan headers first.** Expand an entry only if current task touches that tag domain.
 > Tags must exist in `charter.json` `project.tag_taxonomy`.
 
-<!--
+**Entry template** (copy and fill for each superseded decision):
+
+```
 ### DJ-001 [tag] D-XXX superseded by D-YYY
 
 - **Was:** (original decision, one line)
 - **Now:** (replacement decision, one line)
 - **Why:** (what evidence/reasoning caused the change)
 - **Lesson:** (reusable takeaway — the point of this whole system)
+```
 
-RULES:
+**Rules:**
 - One entry per superseded/amended decision. Not for new decisions (those go in roadmap.json).
 - Tag in brackets = greppable domain (must be in charter.json tag_taxonomy).
 - Keep entries to 4 lines max. Link to evidence, don't paste it.
 - DJ numbering is sequential, never reused.
 - When adding a DJ entry, also update the decision's status to "superseded" in roadmap.json.
 - Add a devlog entry with event: "dj_entry".
--->

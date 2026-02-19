@@ -39,7 +39,7 @@
       "cost_increases",
       "risk_increases",
       "irreversible_actions",
-      "production deploys"
+      "production_deploys"
     ],
     "kb_policy": [
       "Every feature/fix includes a KB update under KB/.",

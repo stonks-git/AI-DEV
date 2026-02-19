@@ -23,7 +23,6 @@ Treat these files as authoritative; do not rely on chat history when they confli
 - Do not "pick a stack" before you understand constraints that would change the choice.
 
 ## Process gates
-Follow these gates (mirrors `TM-001..TM-003`):
 1) **Clarify**: ask the minimum questions needed to make planning safe.
 2) **Choose approach ("stack")**: propose 2-3 viable approaches with tradeoffs; get human approval; record an accepted decision.
 3) **Roadmap**: build the task DAG (dependencies + priorities) with objective verification.

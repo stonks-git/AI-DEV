@@ -9,7 +9,9 @@
 
 _(No sessions yet. Fill after each work session.)_
 
-<!--
+**Session template** (copy and fill for each session):
+
+```
 ### SESSION <date> (<number>) - <TITLE>
 
 **STATUS:** DONE / DOING / TODO
@@ -25,7 +27,7 @@ _(No sessions yet. Fill after each work session.)_
 | `path/to/file` | Description |
 
 ---
--->
+```
 
 ## What is this project?
 
@@ -57,7 +59,7 @@ _(Fill after bootstrap. One paragraph.)_
 
 ## Memory Marker
 
-_(Fill after each task completion)_
+> Quick-recovery anchor for context loss. After autocompact (context compression), the agent reads this single line to know: when was the last save, what was just finished, and what's next. Update after every task completion.
 
 ```
 MEMORY_MARKER: <timestamp> | <last_task_completed> | <next_task>

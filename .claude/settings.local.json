@@ -11,7 +11,12 @@
       "Skill(doc)",
       "WebSearch",
       "Bash(gh auth status:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git rm:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh search:*)",
+      "Bash(gh api:*)"
     ]
   }
 }

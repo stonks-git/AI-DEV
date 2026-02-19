@@ -10,7 +10,7 @@
 | 01 | `KB/KB_01_architecture.md` | Architecture + Decision Journal | arch, decisions | always: overview. on-demand: DJ entries by tag |
 
 <!--
-LOADING RULES (for Opus 4.6):
+LOADING RULES (for the supervisor agent):
 
 1. Bootstrap: load all "always" files. For "always (latest only)", check BLUEPRINT_INDEX.md for current version pointer.
 2. During work: if current task touches a tag domain, grep DJ headers for matching [tag] and load those entries.
