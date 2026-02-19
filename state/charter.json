@@ -18,6 +18,7 @@
       "must_use": [],
       "must_avoid": [],
       "deploy_policy": {
+        "_note": "Policy constraints only. Full deploy ceremony is in workflows/deploy.md.",
         "rule": "",
         "steps": [],
         "forbidden": ""

@@ -10,6 +10,10 @@
 | 01 | `KB/KB_01_architecture.md` | Architecture + Decision Journal | arch, decisions | always: overview. on-demand: DJ entries by tag |
 
 <!--
+NOTE: KB_index routes KB/ files only. State files (charter.json, roadmap.json,
+devlog.ndjson, handoff.md, plans/, schema_log.md) and project workflows (workflows/)
+are loaded per Bootstrap order in CLAUDE.md, not through this router.
+
 LOADING RULES (for the supervisor agent):
 
 1. Bootstrap: load all "always" files. For "always (latest only)", check BLUEPRINT_INDEX.md for current version pointer.

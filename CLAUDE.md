@@ -2,7 +2,7 @@
 
 > Fill project description here after bootstrap.
 
-State: `state/` (charter.json, roadmap.json, devlog.ndjson, handoff.md).
+State: `state/` (charter.json, roadmap.json, devlog.ndjson, handoff.md, plans/, schema_log.md).
 
 ## Bootstrap (single origin — start here)
 1. This file (CLAUDE.md) — framework rules, gates, loading discipline
@@ -31,6 +31,7 @@ Before implementing ANY code change, run the **pre-build-explorer** agent first.
 **Blueprint Gate:** Scaffolding/architecture change -> new version file in `KB/blueprints/` + update `BLUEPRINT_INDEX.md` pointer. No silent plan changes.
 **Decision Journal Gate:** Decision superseded or amended -> add DJ-XXX entry to `KB/KB_01_architecture.md`. Link old and new decision IDs. Record the WHY.
 **Doc Gate:** Task completed -> run `/doc`. All state files updated. `python3 taskmaster.py validate` passes.
+**Schema Log Gate (DB projects only):** New migration created -> update `state/schema_log.md`. Verify: check version control for new migration files.
 
 ## Devlog
 Append single-line JSON to `state/devlog.ndjson` for: accepted decisions, scope changes, completed milestones, major blockers, blueprint versions, Decision Journal entries.
@@ -41,9 +42,16 @@ Event types: `feature`, `bugfix`, `refactor`, `kb_update`, `decision`, `handoff`
 Save progress BEFORE autocompact eats it. Trigger: 3+ files read without save, important decision, task completed.
 Actions: update `state/handoff.md` (including `MEMORY_MARKER`) -> append devlog event -> `python3 taskmaster.py validate`.
 The `MEMORY_MARKER` in handoff.md is a quick-recovery anchor: `<timestamp> | <last_task_completed> | <next_task>`. Update it after every task completion so context can be recovered after autocompact.
+Session compression: keep only last 3 sessions in handoff.md. Older sessions are archived in git history and summarized in devlog.ndjson. This prevents handoff.md from bloating and wasting context window.
 
 ## Verification (before marking done)
-Task matches request. Tests/checks pass. No regressions. Minimal changes only. KB updated. Blueprint updated if plan changed. Decision Journal entry if decision changed.
+
+| # | Check | How |
+|---|-------|-----|
+| 1 | **Matches request** | Deliverable = what was asked |
+| 2 | **Works** | Runs/tests pass, no regressions |
+| 3 | **Minimal** | `git diff` shows only necessary changes |
+| 4 | **Documented** | KB updated if code changed, blueprint if arch changed, DJ if decision changed |
 
 ## Anti-Drift (CRITICAL)
 - Work ONLY on the current task. Nothing else.
@@ -71,5 +79,7 @@ If you don't remember current task/recent files/decisions: **STOP.** Follow Boot
 - Full protocols: `prompts/` — portable behavior contracts. Usable by any tool, not just Claude Code.
 - Audit orchestrator: `prompts/auditors/runner.md` — manual use prompt for running full audit sequences. Not a subagent (can't call sub-subagents).
 - Supervisor contract: `prompts/supervisor.md`
+- Project workflows: `workflows/` — on-demand project-specific workflow templates (deploy ceremonies, architecture checks, custom gates). Loaded when task matches.
+- Operational plans: `state/plans/` — multi-phase strategies. Naming: `YYYYMMDDHHMM-topic.md`.
 - All agents inherit this CLAUDE.md automatically.
 - Agent stub paths are relative to repository root.

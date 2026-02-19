@@ -74,5 +74,6 @@ MEMORY_MARKER: <timestamp> | <last_task_completed> | <next_task>
 - [ ] **KB updated** if code was modified + `kb_update` devlog entry
 - [ ] **Blueprint updated** if scaffolding/architecture changed + `blueprint` devlog entry
 - [ ] **Decision Journal entry** if any decision was superseded + `dj_entry` devlog entry
+- [ ] **Schema Log updated** if DB migrations were created
 - [ ] `python3 taskmaster.py validate` exits 0
 - [ ] Keep only last 3 sessions (older ones archived in git)
