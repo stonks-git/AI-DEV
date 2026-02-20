@@ -33,6 +33,23 @@ Before implementing ANY code change, run the **pre-build-explorer** agent first.
 **Doc Gate:** Task completed -> run `/doc`. All state files updated. `python3 taskmaster.py validate` passes.
 **Schema Log Gate (DB projects only):** New migration created -> update `state/schema_log.md`. Verify: check version control for new migration files.
 
+## Plan Execution Gate (NEVER SKIP)
+Working from a plan in `state/plans/`? Identify your session type:
+
+**Brainstorm session:** Iterate on plan structure with user. Phases have intent only — no atomic tasks. Don't implement anything.
+
+**Decomposition session:** Convert the next undecomposed phase into 3-4 atomic tasks (Files/Do/Verify). Explore codebase broadly to write precise tasks. Don't implement anything.
+
+**Implementation session:** Load only the current phase's tasks. Execute them in order. Tick checkboxes on completion. Run /doc when phase is done. Mark phase heading DONE. Don't decompose future phases.
+
+Rules for all plan session types:
+- Find the first unchecked task. Start there.
+- Don't re-read or re-plan completed (checked) tasks.
+- If a task's approach turns out wrong: update the task, note what you learned, adjust remaining tasks in the phase.
+- When all phases are DONE: set plan Status to `done`.
+
+See `state/plans/README.md` for full template and workflow.
+
 ## Devlog
 Append single-line JSON to `state/devlog.ndjson` for: accepted decisions, scope changes, completed milestones, major blockers, blueprint versions, Decision Journal entries.
 
@@ -63,6 +80,15 @@ Session compression: keep only last 3 sessions in handoff.md. Older sessions are
 - Never present assumptions as facts -- mark [ASSUMED].
 - Do not rewrite existing content in ways that drop context.
 
+## Intellectual Honesty (NEVER SKIP)
+Do not agree with the user when they are wrong. Specifically:
+- Correct incorrect technical claims. Cite the file, line, or fact.
+- Flag when "simple" changes are actually complex. State the real scope.
+- Correct misstatements about codebase state — you can see the code, they're going from memory.
+- Warn when a proposed approach conflicts with what you observe.
+- State the correction once, concisely, with evidence. If the user insists after seeing your evidence, defer — they may have context you don't. Note [USER OVERRIDE] in devlog.
+- This applies to verifiable facts, not preferences or style choices. User owns what/why. You own pushing back on incorrect how/is.
+
 ## Long-Running Tasks
 - ALWAYS warn the user before running any long background task.
 - Run with a viewable progress bar so the user can monitor.
@@ -80,6 +106,6 @@ If you don't remember current task/recent files/decisions: **STOP.** Follow Boot
 - Audit orchestrator: `prompts/auditors/runner.md` — manual use prompt for running full audit sequences. Not a subagent (can't call sub-subagents).
 - Supervisor contract: `prompts/supervisor.md`
 - Project workflows: `workflows/` — on-demand project-specific workflow templates (deploy ceremonies, architecture checks, custom gates). Loaded when task matches.
-- Operational plans: `state/plans/` — multi-phase strategies. Naming: `YYYYMMDDHHMM-topic.md`.
+- Operational plans: `state/plans/` — multi-phase execution scripts with tracked progress. Naming: `YYYYMMDDHHMM-topic.md`. See `state/plans/README.md` for template and workflow.
 - All agents inherit this CLAUDE.md automatically.
 - Agent stub paths are relative to repository root.
