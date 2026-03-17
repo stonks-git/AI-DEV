@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""Taskmaster: lightweight roadmap + dependency validation for multi-agent planning.
+
+Framework utility that validates project state files (charter.json, roadmap.json,
+devlog.ndjson), computes task dependency order, and identifies ready-to-start tasks.
+Used by both the CLI (``python3 taskmaster.py ready``) and the project framework
+gates (``python3 taskmaster.py validate``).
+"""
 from __future__ import annotations
 
 import argparse
@@ -27,6 +34,7 @@ _ISO8601_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 
 
 def _read_json(path: Path) -> Any:
+    """Read and parse a JSON file, raising clear errors on missing/invalid files."""
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
@@ -36,6 +44,7 @@ def _read_json(path: Path) -> Any:
 
 
 def _is_nonempty_str(value: Any) -> bool:
+    """Return True if *value* is a non-blank string."""
     return isinstance(value, str) and value.strip() != ""
 
 
@@ -63,6 +72,7 @@ class ValidationIssue:
 
 
 def _expect_type(obj: Any, expected: type, path: str, issues: list[ValidationIssue]) -> bool:
+    """Assert *obj* is an instance of *expected*; append an issue and return False if not."""
     if isinstance(obj, expected):
         return True
     issues.append(ValidationIssue("error", f"{path}: expected {expected.__name__}"))
@@ -70,6 +80,7 @@ def _expect_type(obj: Any, expected: type, path: str, issues: list[ValidationIss
 
 
 def validate_charter(charter: Any) -> list[ValidationIssue]:
+    """Validate charter.json structure and required fields."""
     issues: list[ValidationIssue] = []
     if not _expect_type(charter, dict, "charter", issues):
         return issues
@@ -113,6 +124,7 @@ def validate_charter(charter: Any) -> list[ValidationIssue]:
 
 
 def validate_devlog(devlog_path: Path) -> list[ValidationIssue]:
+    """Validate devlog.ndjson: each line must be valid JSON with ts, event, summary."""
     issues: list[ValidationIssue] = []
     if not devlog_path.exists():
         return issues
@@ -147,6 +159,7 @@ def validate_devlog(devlog_path: Path) -> list[ValidationIssue]:
 
 
 def _validate_question(question: Any, path: str, issues: list[ValidationIssue]) -> None:
+    """Validate an open_questions entry (id, question, blocking, status)."""
     if not _expect_type(question, dict, path, issues):
         return
     for key in ("id", "question", "blocking", "status"):
@@ -164,6 +177,7 @@ def _validate_question(question: Any, path: str, issues: list[ValidationIssue]) 
 
 
 def _validate_decision(decision: Any, path: str, issues: list[ValidationIssue]) -> None:
+    """Validate a decisions entry (id, summary, status)."""
     if not _expect_type(decision, dict, path, issues):
         return
     for key in ("id", "summary", "status"):
@@ -179,6 +193,7 @@ def _validate_decision(decision: Any, path: str, issues: list[ValidationIssue]) 
 
 
 def _validate_task(task: Any, path: str, issues: list[ValidationIssue]) -> None:
+    """Validate a task entry (required keys, status enum, list fields)."""
     if not _expect_type(task, dict, path, issues):
         return
     required = (
@@ -260,6 +275,7 @@ def _toposort_tasks(tasks: list[dict[str, Any]]) -> tuple[list[str], list[str]]:
 
 
 def validate_roadmap(roadmap: Any) -> tuple[list[ValidationIssue], list[dict[str, Any]]]:
+    """Validate roadmap.json and return (issues, topologically-sorted tasks)."""
     issues: list[ValidationIssue] = []
     if not _expect_type(roadmap, dict, "roadmap", issues):
         return issues, []
@@ -317,6 +333,7 @@ def validate_roadmap(roadmap: Any) -> tuple[list[ValidationIssue], list[dict[str
 
 
 def _format_issues(issues: Iterable[ValidationIssue]) -> str:
+    """Format validation issues as ERROR/WARN prefixed lines for CLI output."""
     lines = []
     for issue in issues:
         prefix = "ERROR" if issue.level == "error" else "WARN"
@@ -325,6 +342,7 @@ def _format_issues(issues: Iterable[ValidationIssue]) -> str:
 
 
 def cmd_validate(_: argparse.Namespace) -> int:
+    """CLI handler: validate all state files (charter, roadmap, devlog)."""
     charter = _read_json(STATE_DIR / "charter.json")
     roadmap = _read_json(STATE_DIR / "roadmap.json")
 
@@ -345,6 +363,7 @@ def cmd_validate(_: argparse.Namespace) -> int:
 
 
 def cmd_order(_: argparse.Namespace) -> int:
+    """CLI handler: print task IDs in dependency-resolved order."""
     roadmap = _read_json(STATE_DIR / "roadmap.json")
     issues, ordered_tasks = validate_roadmap(roadmap)
     errors = [i for i in issues if i.level == "error"]
@@ -358,6 +377,7 @@ def cmd_order(_: argparse.Namespace) -> int:
 
 
 def cmd_ready(_: argparse.Namespace) -> int:
+    """CLI handler: list tasks whose dependencies are satisfied (status=todo, deps done)."""
     roadmap = _read_json(STATE_DIR / "roadmap.json")
     issues, ordered_tasks = validate_roadmap(roadmap)
     errors = [i for i in issues if i.level == "error"]
@@ -432,6 +452,7 @@ def cmd_steps(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the argparse CLI parser with validate/order/ready/steps subcommands."""
     parser = argparse.ArgumentParser(
         prog="taskmaster",
         description="Taskmaster: lightweight roadmap + dependency validation for multi-agent planning.",
@@ -455,6 +476,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Entry point: parse args and dispatch to the appropriate subcommand."""
     parser = build_parser()
     args = parser.parse_args(argv)
     return int(args.func(args))

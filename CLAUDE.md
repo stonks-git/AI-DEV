@@ -15,6 +15,15 @@ State: `state/` (charter.json, roadmap.json, devlog.ndjson, handoff.md, plans/, 
 
 Never bulk-load historical blueprint versions. Never load all KB files. Follow the router.
 
+## CODE COMMENTS (MANDATORY)
+
+All code must be commented as a senior expert developer would — clear, everywhere, so that an external developer can pick up the project without help. Specifically:
+- Docstring on every function/method/class: what it does, its parameters, what it returns, exceptions raised
+- Header comment at the top of every file: module's role in the architecture
+- Inline comments on any non-obvious logic: explain WHY, not just WHAT the line does
+- References to decisions (D-XXX), audit findings (SEC-XXX, DB-XXX), and KB when relevant
+- Comments explain the WHY, not the WHAT (no `# increment i` on `i += 1`)
+
 ## PRIME DIRECTIVES
 
 **1. Every decision that changes the plan MUST be recorded.**
@@ -23,12 +32,22 @@ When a decision changes something in the plan or blueprint: record it. Record wh
 **2. Every completed task MUST be documented before moving on.**
 After every task, run `/doc`. Document KB, implementation details, all relevant files. On every step. **Slow and precise > fast and headless.** Undocumented work is lost work.
 
+**3. Do not agree with the user when they are wrong.**
+Truth over comfort. Specifically:
+- Correct incorrect technical claims. Cite the file, line, or fact.
+- Flag when "simple" changes are actually complex. State the real scope.
+- Correct misstatements about codebase state — you can see the code, they're going from memory.
+- Warn when a proposed approach conflicts with what you observe.
+- Never present assumptions as facts — mark [ASSUMED]. Ask if unclear — do not assume.
+- State the correction once, concisely, with evidence. If the user insists after seeing your evidence, defer — they may have context you don't. Note [USER OVERRIDE] in devlog.
+- This applies to verifiable facts, not preferences or style choices. User owns what/why. You own pushing back on incorrect how/is.
+
 ## Pre-Build Gate (NEVER SKIP)
 Before implementing ANY code change, run the **pre-build-explorer** agent first. It finds existing patterns, conventions, and reusable components so new code integrates naturally with the codebase. No coding without precedent analysis.
 
 ## Mandatory Gates (NEVER SKIP)
 **KB Gate:** Code change affecting functionality/UI/flows -> update `KB/*.md` + `kb_update` devlog entry. No KB for module? Create one. No commit without KB update.
-**Blueprint Gate:** Scaffolding/architecture change -> new version file in `KB/blueprints/` + update `BLUEPRINT_INDEX.md` pointer. No silent plan changes.
+**Blueprint Gate:** Scaffolding/architecture change -> new version file in `KB/blueprints/` + update `BLUEPRINT_INDEX.md` pointer. No silent plan changes. **Versioning rule:** any significant or major blueprint modification (new component, removed component, pattern change, new architectural decisions) MUST create a new version (v0.3, v0.4...). Set the old version's status to `superseded`. Minor updates (typo fixes, adding references to lists) may modify the current version without creating a new one.
 **Decision Journal Gate:** Decision superseded or amended -> add DJ-XXX entry to `KB/KB_01_architecture.md`. Link old and new decision IDs. Record the WHY.
 **Doc Gate:** Task completed -> run `/doc`. All state files updated. `python3 taskmaster.py validate` passes.
 **Schema Log Gate (DB projects only):** New migration created -> update `state/schema_log.md`. Verify: check version control for new migration files.
@@ -38,7 +57,7 @@ Working from a plan in `state/plans/`? Identify your session type:
 
 **Brainstorm session:** Iterate on plan structure with user. Phases have intent only — no atomic tasks. Don't implement anything.
 
-**Decomposition session:** Convert the next undecomposed phase into 3-4 atomic tasks (Files/Do/Verify). Explore codebase broadly to write precise tasks. Don't implement anything.
+**Decomposition session:** Convert the next undecomposed phase into 3-4 atomic tasks (Files/Do/Verify). Explore codebase broadly to write precise tasks. Don't implement anything. **Versioning rule:** decomposition creates a new plan file (new timestamp, e.g. v3→v4). The new file contains the full plan: DONE phases preserved as-is, the newly decomposed phase with atomic tasks, and future phases still as intent. Set the previous plan's Status to `superseded`. Update handoff to point to the new plan.
 
 **Implementation session:** Load only the current phase's tasks. Execute them in order. Tick checkboxes on completion. Run /doc when phase is done. Mark phase heading DONE. Don't decompose future phases.
 
@@ -80,19 +99,21 @@ Session compression: keep only last 3 sessions in handoff.md. Older sessions are
 - Never present assumptions as facts -- mark [ASSUMED].
 - Do not rewrite existing content in ways that drop context.
 
-## Intellectual Honesty (NEVER SKIP)
-Do not agree with the user when they are wrong. Specifically:
-- Correct incorrect technical claims. Cite the file, line, or fact.
-- Flag when "simple" changes are actually complex. State the real scope.
-- Correct misstatements about codebase state — you can see the code, they're going from memory.
-- Warn when a proposed approach conflicts with what you observe.
-- State the correction once, concisely, with evidence. If the user insists after seeing your evidence, defer — they may have context you don't. Note [USER OVERRIDE] in devlog.
-- This applies to verifiable facts, not preferences or style choices. User owns what/why. You own pushing back on incorrect how/is.
 
 ## Long-Running Tasks
 - ALWAYS warn the user before running any long background task.
 - Run with a viewable progress bar so the user can monitor.
 - Never silently run long tasks in background.
+
+## Scripts: Debug Flag (MANDATORY)
+
+Every script created in this project MUST have a `--debug` flag that:
+- Writes a hyper-precise, complete log of absolutely every action taken by the script
+- Logs to a file (e.g. `data/<script_name>_debug.log`) AND to stdout
+- Without `--debug`, the script runs normally with minimal output
+- With `--debug`, every micro-step is logged: file reads, classifications, API calls, DB queries, decisions, skips, errors with full tracebacks
+- Use a `log(msg, debug_only=True/False)` helper pattern — `debug_only=True` for verbose steps, `False` for important messages shown in both modes
+- The log file is flushed after each line for real-time `tail -f` monitoring
 
 ## Tag Taxonomy
 Tags are defined in `state/charter.json` under `project.tag_taxonomy`. All tags used in KB_index `Tags` column and Decision Journal entry `[tag]` headers MUST exist in the taxonomy. To add a new tag, add it to charter.json first, then use it.
