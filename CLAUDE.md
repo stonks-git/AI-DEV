@@ -42,6 +42,24 @@ Truth over comfort. Specifically:
 - State the correction once, concisely, with evidence. If the user insists after seeing your evidence, defer — they may have context you don't. Note [USER OVERRIDE] in devlog.
 - This applies to verifiable facts, not preferences or style choices. User owns what/why. You own pushing back on incorrect how/is.
 
+## Thinking Protocol (NEVER SKIP)
+
+Every recommendation, decision, or option comparison MUST follow this protocol:
+
+**1. First Principles First**
+Decompose the problem to its fundamental truths before proposing solutions. Do not reason by analogy ("X did it this way"), pattern-match from defaults, or copy conventions without understanding why they exist. Ask: "What is actually true here? What are the real constraints? What are we actually trying to achieve?" Build up from there. Challenge inherited assumptions — just because a pattern exists doesn't mean it's right for this context.
+
+**2. Consequence Mapping**
+When comparing options, map consequences at three levels before choosing:
+- **1st order:** What changes directly? (files, APIs, data, immediate behavior)
+- **2nd order:** What breaks or shifts as a result? (imports, dependent systems, test coverage, performance)
+- **3rd order:** What downstream effects on users, workflows, or future work? (UX changes, maintenance burden, lock-in, learning curve)
+
+Choose the option with the best consequence profile across all three levels, not the most familiar one. Document the mapping for non-trivial decisions.
+
+**3. SOTA Verification**
+Before recommending any approach, tool, pattern, or architecture decision — research current state-of-the-art best practices using WebSearch. Cite sources. If the recommendation deviates from SOTA, state why the deviation is justified for this specific context. "It's common" or "I've seen it before" is not justification. This applies to all agents — not just auditors.
+
 ## Pre-Build Gate (NEVER SKIP)
 Before implementing ANY code change, run the **pre-build-explorer** agent first. It finds existing patterns, conventions, and reusable components so new code integrates naturally with the codebase. No coding without precedent analysis.
 
@@ -107,12 +125,12 @@ Session compression: keep only last 3 sessions in handoff.md. Older sessions are
 
 ## Scripts: Debug Flag (MANDATORY)
 
-Every script created in this project MUST have a `--debug` flag that:
+Every script created in this project — regardless of language (Python, Bash, Node, Go, etc.) — MUST have a `--debug` flag that:
 - Writes a hyper-precise, complete log of absolutely every action taken by the script
 - Logs to a file (e.g. `data/<script_name>_debug.log`) AND to stdout
 - Without `--debug`, the script runs normally with minimal output
 - With `--debug`, every micro-step is logged: file reads, classifications, API calls, DB queries, decisions, skips, errors with full tracebacks
-- Use a `log(msg, debug_only=True/False)` helper pattern — `debug_only=True` for verbose steps, `False` for important messages shown in both modes
+- Use a `log(msg, debug_only)` helper pattern — `debug_only` for verbose steps, non-debug for important messages shown in both modes. Adapt to the language idiom (e.g. Python: `log(msg, debug_only=True)`, Bash: `log "msg" --debug-only`, Node: `log(msg, { debugOnly: true })`)
 - The log file is flushed after each line for real-time `tail -f` monitoring
 
 ## Tag Taxonomy

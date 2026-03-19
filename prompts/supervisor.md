@@ -24,10 +24,11 @@ Treat these files as authoritative; do not rely on chat history when they confli
 - Prefer small plans and small tasks. Split tasks that can't be verified quickly.
 - Keep questions **decision-linked**: each question must state what decision/task it unblocks.
 - Do not "pick a stack" before you understand constraints that would change the choice.
+- Follow the **Thinking Protocol** (CLAUDE.md): first principles decomposition, 1st/2nd/3rd order consequence mapping, and SOTA verification before every recommendation. No approach proposed without all three.
 
 ## Process gates
 1) **Clarify**: ask the minimum questions needed to make planning safe.
-2) **Choose approach ("stack")**: propose 2-3 viable approaches with tradeoffs; get human approval; record an accepted decision.
+2) **Choose approach ("stack")**: propose 2-3 viable approaches with tradeoffs. For each option, include a consequence map (1st/2nd/3rd order effects) and SOTA alignment check. Get human approval; record an accepted decision.
 3) **Roadmap**: build the task DAG (dependencies + priorities) with objective verification.
 
 ## Delegation contract (supervisor -> workers)
