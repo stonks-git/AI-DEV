@@ -2,7 +2,7 @@
 
 > Fill project description here after bootstrap.
 
-State: `state/` (charter.json, roadmap.json, devlog.ndjson, handoff.md, plans/, schema_log.md).
+State: `state/` (charter.json, roadmap.json, devlog.ndjson, handoff.md, plans/, schema_log.md, comms.md).
 
 ## Bootstrap (single origin — start here)
 1. This file (CLAUDE.md) — framework rules, gates, loading discipline
@@ -14,6 +14,29 @@ State: `state/` (charter.json, roadmap.json, devlog.ndjson, handoff.md, plans/, 
 7. `python3 taskmaster.py ready` — next available tasks
 
 Never bulk-load historical blueprint versions. Never load all KB files. Follow the router.
+
+## Post-Bootstrap: Spec Sheet (skippable)
+After bootstrap, offer to create an exhaustive spec sheet for the project. The user may skip this (`"skip spec"`) — but if not skipped, produce a comprehensive specification document (`state/spec.md`) that covers:
+- **Purpose & scope:** What the app/system does, who it's for, what problem it solves
+- **Functional requirements:** Every feature, user flow, and behavior — described explicitly, not vaguely
+- **Non-functional requirements:** Performance targets, scalability, security, accessibility, compliance
+- **Data model:** Entities, relationships, constraints, lifecycle states
+- **API surface:** Endpoints, inputs, outputs, error cases, auth requirements
+- **UI/UX:** Screens, navigation, states (empty, loading, error, success), responsive behavior
+- **Integrations:** Third-party services, external APIs, data sources
+- **Edge cases & constraints:** Known gotchas, hard limits, assumptions that must hold
+- **Acceptance criteria:** How to verify each requirement is met
+
+The spec is a living document — update it when scope changes. It serves as the single source of truth for what we're building, feeds directly into roadmap generation, and prevents scope ambiguity during implementation. When generating the roadmap, cross-reference every phase against the spec to ensure nothing is missed.
+
+## Client Communications Log
+All client communications live in `state/comms.md`. The user pastes emails, messages, call notes, and meeting summaries there. This file is:
+- **The record of what the client actually said.** When spec and client message conflict, flag it.
+- **Input for spec generation.** When building or updating the spec sheet, cross-reference `comms.md` to extract requirements, constraints, and preferences the client expressed.
+- **Mediation evidence.** If there's a dispute about what was agreed, `comms.md` is the source of truth.
+- **Never edited retroactively.** Past entries are immutable records. Corrections go in as new entries.
+
+When the user pastes a new communication, scan it for scope changes, new requirements, or decisions that affect the current spec or roadmap. Proactively flag anything that contradicts or extends the existing plan.
 
 ## CODE COMMENTS (MANDATORY)
 
@@ -106,6 +129,14 @@ Session compression: keep only last 3 sessions in handoff.md. Older sessions are
 | 2 | **Works** | Runs/tests pass, no regressions |
 | 3 | **Minimal** | `git diff` shows only necessary changes |
 | 4 | **Documented** | KB updated if code changed, blueprint if arch changed, DJ if decision changed |
+
+## Bug Fixing: Root Cause Only (MANDATORY)
+When fixing bugs, ALWAYS find and fix the actual root cause. No workarounds. No band-aids. No symptom masking. Specifically:
+- Trace the bug to its origin — the line, the logic flaw, the wrong assumption, the missing validation. Fix THAT.
+- If a "fix" doesn't explain WHY the bug happened, it's not a fix — it's a mask. Keep digging.
+- Never suppress errors, add defensive checks around broken logic, or route around the real problem.
+- If the root cause is in a dependency or external system you can't change, document it explicitly and explain why the workaround is the only option. This is the ONLY acceptable exception.
+- Record the causal chain in the commit message or devlog: what broke, why, and what the actual fix was.
 
 ## Anti-Drift (CRITICAL)
 - Work ONLY on the current task. Nothing else.
