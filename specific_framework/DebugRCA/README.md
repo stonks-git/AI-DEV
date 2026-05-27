@@ -1,3 +1,5 @@
+> **Portable version.** This is the platform-agnostic DebugRCA process. For Claude Code integration with subagent isolation, evidence grading, and skill chaining, see the `/debug-rca` skill at `prompts/debug-rca.md`.
+
 # Debug RCA Adversarial (v2)
 
 A rigorous, adversarial root cause analysis process for non-trivial bugs. Designed to eliminate symptom masking, false root causes, and plans that break downstream consumers.

@@ -173,6 +173,7 @@ If you don't remember current task/recent files/decisions: **STOP.** Follow Boot
 ## Framework Structure
 - Agent stubs: `.claude/agents/` — lightweight registration files for Claude Code. Point to full protocols in `prompts/`.
 - Full protocols: `prompts/` — portable behavior contracts. Usable by any tool, not just Claude Code.
+- Investigation skills: `.claude/skills/<name>/SKILL.md` stubs → `prompts/<name>.md` protocols. Four skills: investigate, debug-rca, troubleshoot, adversarial-review.
 - Audit orchestrator: `prompts/auditors/runner.md` — manual use prompt for running full audit sequences. Not a subagent (can't call sub-subagents).
 - Supervisor contract: `prompts/supervisor.md`
 - Project workflows: `workflows/` — on-demand project-specific workflow templates (deploy ceremonies, architecture checks, custom gates). Loaded when task matches.

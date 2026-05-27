@@ -8,6 +8,11 @@
 | B | `KB/blueprints/BLUEPRINT_INDEX.md` | Version pointer + history table | arch | always |
 | B+ | `KB/blueprints/v0.1_initial_plan.md` | Current scaffolding plan | arch, scaffold | always (latest only) |
 | 01 | `KB/KB_01_architecture.md` | Architecture + Decision Journal | arch, decisions | always: overview. on-demand: DJ entries by tag |
+| 02 | `prompts/shared-investigation-foundations.md` | Shared patterns for investigation skills (design-time reference) | investigation | on-demand |
+| 04 | `prompts/investigate.md` | Investigate skill protocol | investigation | on-demand |
+| 05 | `prompts/debug-rca.md` | Debug RCA skill protocol | rca, investigation | on-demand |
+| 06 | `prompts/troubleshoot.md` | Troubleshoot skill protocol | rca, investigation | on-demand |
+| 07 | `prompts/adversarial-review.md` | Adversarial Review skill protocol | adversarial | on-demand |
 
 <!--
 NOTE: KB_index routes KB/ files only. State files (charter.json, roadmap.json,
