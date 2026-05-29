@@ -193,30 +193,30 @@ def _validate_decision(decision: Any, path: str, issues: list[ValidationIssue]) 
 
 
 def _validate_task(task: Any, path: str, issues: list[ValidationIssue]) -> None:
-    """Validate a task entry (required keys, status enum, list fields)."""
+    """Validate a task entry (required keys, status enum, list fields).
+
+    Terminal tasks (done/skipped) only require id, title, status, priority, owner, depends_on.
+    Active tasks (todo/doing/blocked) also require intent, deliverable, acceptance_criteria, verification.
+    """
     if not _expect_type(task, dict, path, issues):
         return
-    required = (
-        "id",
-        "title",
-        "intent",
-        "depends_on",
-        "priority",
-        "status",
-        "owner",
-        "deliverable",
-        "acceptance_criteria",
-        "verification",
-    )
-    for key in required:
+
+    # Keys required for ALL tasks regardless of status
+    always_required = ("id", "title", "depends_on", "priority", "status", "owner")
+    # Keys only required for active (non-terminal) tasks
+    active_required = ("intent", "deliverable", "acceptance_criteria", "verification")
+
+    for key in always_required:
         if key not in task:
             issues.append(ValidationIssue("error", f"{path}: missing key `{key}`"))
 
-    if "status" in task and task.get("status") not in ALLOWED_TASK_STATUSES:
+    status = task.get("status", "")
+
+    if "status" in task and status not in ALLOWED_TASK_STATUSES:
         issues.append(
             ValidationIssue(
                 "error",
-                f"{path}.status: invalid `{task.get('status')}` (allowed: {sorted(ALLOWED_TASK_STATUSES)})",
+                f"{path}.status: invalid `{status}` (allowed: {sorted(ALLOWED_TASK_STATUSES)})",
             )
         )
     if "depends_on" in task and not isinstance(task.get("depends_on"), list):
@@ -226,12 +226,17 @@ def _validate_task(task: Any, path: str, issues: list[ValidationIssue]) -> None:
     if "verification" in task and not isinstance(task.get("verification"), list):
         issues.append(ValidationIssue("error", f"{path}.verification: expected list"))
 
-    if _is_nonempty_str(task.get("deliverable")) is False:
-        issues.append(ValidationIssue("error", f"{path}.deliverable: must be a non-empty string"))
-    if isinstance(task.get("acceptance_criteria"), list) and len(task.get("acceptance_criteria")) == 0:
-        issues.append(ValidationIssue("error", f"{path}.acceptance_criteria: must have at least 1 item"))
-    if isinstance(task.get("verification"), list) and len(task.get("verification")) == 0:
-        issues.append(ValidationIssue("error", f"{path}.verification: must have at least 1 item"))
+    # Enforce detailed fields only on active tasks; terminal tasks (done/skipped) get a pass
+    if status not in TERMINAL_TASK_STATUSES:
+        for key in active_required:
+            if key not in task:
+                issues.append(ValidationIssue("error", f"{path}: missing key `{key}`"))
+        if _is_nonempty_str(task.get("deliverable")) is False:
+            issues.append(ValidationIssue("error", f"{path}.deliverable: must be a non-empty string"))
+        if isinstance(task.get("acceptance_criteria"), list) and len(task.get("acceptance_criteria")) == 0:
+            issues.append(ValidationIssue("error", f"{path}.acceptance_criteria: must have at least 1 item"))
+        if isinstance(task.get("verification"), list) and len(task.get("verification")) == 0:
+            issues.append(ValidationIssue("error", f"{path}.verification: must have at least 1 item"))
 
 
 def _toposort_tasks(tasks: list[dict[str, Any]]) -> tuple[list[str], list[str]]:

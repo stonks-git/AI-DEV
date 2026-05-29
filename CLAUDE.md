@@ -86,6 +86,19 @@ Before recommending any approach, tool, pattern, or architecture decision — re
 ## Pre-Build Gate (NEVER SKIP)
 Before implementing ANY code change, run the **pre-build-explorer** agent first. It finds existing patterns, conventions, and reusable components so new code integrates naturally with the codebase. No coding without precedent analysis.
 
+## Pre-Modification Doc Gate (NEVER SKIP)
+After Pre-Build Gate, before writing code: read the existing documentation for the area being touched. This prevents re-introducing bugs already solved or contradicting decisions already recorded.
+
+**Fresh-project escape:** If KB/DJ for the module don't exist yet, note "no prior art" and proceed.
+
+**Effort scale:**
+- 1-liner trivial (typo, format) → skip this gate
+- 5-30 LOC → KB section for the module + 2-3 tagged DJ entries + relevant memories
+- Feature / refactor → full KB module + DJ + current blueprint + devlog last 1-2 sessions
+- Cross-module / architectural → exhaustive KB + pre-build-explorer agent
+
+**Banned patterns:** fixing without reading KB, replacing a function without checking DJ entries that shaped it, reverting to an approach a DJ explicitly rejected without a new DJ entry.
+
 ## Mandatory Gates (NEVER SKIP)
 **KB Gate:** Code change affecting functionality/UI/flows -> update `KB/*.md` + `kb_update` devlog entry. No KB for module? Create one. No commit without KB update.
 **Blueprint Gate:** Scaffolding/architecture change -> new version file in `KB/blueprints/` + update `BLUEPRINT_INDEX.md` pointer. No silent plan changes. **Versioning rule:** any significant or major blueprint modification (new component, removed component, pattern change, new architectural decisions) MUST create a new version (v0.3, v0.4...). Set the old version's status to `superseded`. Minor updates (typo fixes, adding references to lists) may modify the current version without creating a new one.
@@ -100,7 +113,7 @@ Working from a plan in `state/plans/`? Identify your session type:
 
 **Decomposition session:** Convert the next undecomposed phase into 3-4 atomic tasks (Files/Do/Verify). Explore codebase broadly to write precise tasks. Don't implement anything. **Versioning rule:** decomposition creates a new plan file (new timestamp, e.g. v3→v4). The new file contains the full plan: DONE phases preserved as-is, the newly decomposed phase with atomic tasks, and future phases still as intent. Set the previous plan's Status to `superseded`. Update handoff to point to the new plan.
 
-**Implementation session:** Load only the current phase's tasks. Execute them in order. Tick checkboxes on completion. Run /doc when phase is done. Mark phase heading DONE. Don't decompose future phases.
+**Implementation session:** Load only the current phase's tasks. Execute them in order. Tick checkboxes on completion. Run /doc when phase is done. Mark phase heading DONE. Don't decompose future phases. If `state/briefings/` contains a briefing for the current task, read it before starting.
 
 Rules for all plan session types:
 - Find the first unchecked task. Start there.
@@ -121,6 +134,9 @@ Actions: update `state/handoff.md` (including `MEMORY_MARKER`) -> append devlog 
 The `MEMORY_MARKER` in handoff.md is a quick-recovery anchor: `<timestamp> | <last_task_completed> | <next_task>`. Update it after every task completion so context can be recovered after autocompact.
 Session compression: keep only last 3 sessions in handoff.md. Older sessions are archived in git history and summarized in devlog.ndjson. This prevents handoff.md from bloating and wasting context window.
 
+### Handoff Session Discipline
+1 session = 1 handoff block. No `cont N` sub-sections. Each new conversation = session number +1 from last seen. One MEMORY_MARKER per session, updated incrementally via Edit. Devlog stays fine-grained (one entry per action).
+
 ## Verification (before marking done)
 
 | # | Check | How |
@@ -130,13 +146,19 @@ Session compression: keep only last 3 sessions in handoff.md. Older sessions are
 | 3 | **Minimal** | `git diff` shows only necessary changes |
 | 4 | **Documented** | KB updated if code changed, blueprint if arch changed, DJ if decision changed |
 
-## Bug Fixing: Root Cause Only (MANDATORY)
-When fixing bugs, ALWAYS find and fix the actual root cause. No workarounds. No band-aids. No symptom masking. Specifically:
-- Trace the bug to its origin — the line, the logic flaw, the wrong assumption, the missing validation. Fix THAT.
-- If a "fix" doesn't explain WHY the bug happened, it's not a fix — it's a mask. Keep digging.
-- Never suppress errors, add defensive checks around broken logic, or route around the real problem.
-- If the root cause is in a dependency or external system you can't change, document it explicitly and explain why the workaround is the only option. This is the ONLY acceptable exception.
-- Record the causal chain in the commit message or devlog: what broke, why, and what the actual fix was.
+## Root Cause Diagnostic Discipline (MANDATORY)
+Any time something is broken — code bug, pipeline stuck, test failing, environment misbehaving, flaky behavior, user-reported issue — start from first principles and find the actual root cause. Not the symptom. Not the most visible failure. The real origin.
+
+**Diagnostic chain (follow in order):**
+1. **Capture** — observe the broken state read-only. Don't mutate anything yet.
+2. **Trace** — follow the causal chain to the origin: the line, the logic flaw, the wrong assumption, the missing validation, the stale state. Keep going until you can explain *why* it broke, not just *what* broke.
+3. **Fix** — fix the root cause. Minimum necessary change.
+4. **Test** — verify the fix against the original broken case.
+5. **Document** — record the causal chain in the commit message or devlog: what broke, why, and what the actual fix was.
+
+Don't assume the fix because you've "seen this before." Decompose what's actually happening — the symptom that looks familiar may have a completely different cause this time.
+
+**Only acceptable exception:** root cause is in a dependency or external system you can't change — document explicitly why the workaround is the only option.
 
 ## Anti-Drift (CRITICAL)
 - Work ONLY on the current task. Nothing else.
@@ -173,10 +195,11 @@ If you don't remember current task/recent files/decisions: **STOP.** Follow Boot
 ## Framework Structure
 - Agent stubs: `.claude/agents/` — lightweight registration files for Claude Code. Point to full protocols in `prompts/`.
 - Full protocols: `prompts/` — portable behavior contracts. Usable by any tool, not just Claude Code.
-- Investigation skills: `.claude/skills/<name>/SKILL.md` stubs → `prompts/<name>.md` protocols. Four skills: investigate, debug-rca, troubleshoot, adversarial-review.
+- Investigation skills: `.claude/skills/<name>/SKILL.md` stubs → `prompts/<name>.md` protocols. Five skills: investigate, debug-rca, troubleshoot, adversarial-review (hypothesis-driven, convergent), and downstream (enumerative, divergent — maps pre-change code coupling / blast radius).
 - Audit orchestrator: `prompts/auditors/runner.md` — manual use prompt for running full audit sequences. Not a subagent (can't call sub-subagents).
 - Supervisor contract: `prompts/supervisor.md`
 - Project workflows: `workflows/` — on-demand project-specific workflow templates (deploy ceremonies, architecture checks, custom gates). Loaded when task matches.
+- Agent briefings: `state/briefings/` — self-contained phase execution guides for autonomous agents. See `state/briefings/README.md` for convention.
 - Operational plans: `state/plans/` — multi-phase execution scripts with tracked progress. Naming: `YYYYMMDDHHMM-topic.md`. See `state/plans/README.md` for template and workflow.
 - All agents inherit this CLAUDE.md automatically.
 - Agent stub paths are relative to repository root.

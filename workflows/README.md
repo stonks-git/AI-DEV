@@ -14,6 +14,7 @@ Project-specific workflow templates. Each file defines a repeatable procedure fo
 | File | Purpose | Fill when |
 |------|---------|-----------|
 | `deploy.md` | Deploy ceremony (local test -> approval -> deploy) | Project has a deploy target |
+| `remote-edit-policy.md` | Local-only edit rules for git-tracked files on remotes | Project has deployed/remote environments |
 
 ## Adding Workflows
 
