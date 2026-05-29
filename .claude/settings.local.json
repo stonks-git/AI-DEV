@@ -16,8 +16,7 @@
       "Bash(git rm:*)",
       "Bash(gh repo view:*)",
       "Bash(gh search:*)",
-      "Bash(gh api:*)",
-      "Bash(cd \"/home/stonks/@dev/AI-DEV test/experiment/codebase\" && .venv/bin/pytest tests/ -q 2>&1)"
+      "Bash(gh api:*)"
     ]
   }
 }
