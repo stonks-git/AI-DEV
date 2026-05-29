@@ -7,7 +7,7 @@
     "success_criteria": [],
     "non_goals": [],
     "stakeholders": ["human_owner"],
-    "tag_taxonomy": ["arch", "scaffold", "decisions", "investigation", "rca", "adversarial", "research"],
+    "tag_taxonomy": ["arch", "scaffold", "decisions", "investigation", "rca", "adversarial", "research", "impact"],
     "constraints": {
       "time": "",
       "budget": "",

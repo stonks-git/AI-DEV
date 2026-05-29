@@ -1,6 +1,8 @@
 # Shared Investigation Foundations — Design-Time Reference
 
-> **This file is NOT loaded at runtime.** It is the authoritative source of truth for shared patterns used across all investigation skills (investigate, debug-rca, troubleshoot, adversarial-review). When writing or updating skill protocols, consult this file. Each protocol inlines the INLINE BLOCK verbatim and references the structural templates as needed.
+> **This file is NOT loaded at runtime.** It is the authoritative source of truth for shared patterns used across the investigation skills (investigate, debug-rca, troubleshoot, adversarial-review). When writing or updating skill protocols, consult this file. Those four protocols inline the INLINE BLOCK verbatim and reference the structural templates as needed.
+>
+> **`downstream` is an ADAPTING consumer, not a verbatim target.** It is enumerative (no hypotheses), so it inlines only the frame-neutral tables (Evidence Grading, Confidence, Uncertainty, Anti-Confabulation) and REPLACES the hypothesis-framed Self-Prompt and Handoff schema with enumerative equivalents. When the grading/confidence tables below change, port the change into `prompts/downstream.md` manually — do NOT propagate the hypothesis-framed sections to it.
 
 ---
 
@@ -240,3 +242,5 @@ Add to the top of each skill protocol:
 ```markdown
 <!-- Shared patterns synced from prompts/shared-investigation-foundations.md on YYYY-MM-DD. Update source first, then propagate to all 4 protocols. -->
 ```
+
+The four hypothesis-driven protocols carry the note above verbatim. `downstream` carries a different note (it adapts, rather than syncs, these tables) — see its top-of-file comment. When editing the grading/confidence tables, update those 4 **and** manually port the table change into `prompts/downstream.md`.
