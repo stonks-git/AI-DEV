@@ -98,6 +98,7 @@ Do not begin without the target symbol and its definition location. Ask for miss
 
 1. Confirm the target symbol's definition `file:line` (Read it — know exactly what is being changed).
 2. Record the intended change. Derive the **contracts at risk**: signature, return type, return semantics (e.g. sortedness, nullability), thrown exceptions, side effects, ordering/timing, serialization shape, schema constraints.
+   - **Prior-art / doc sweep (enumerative — no hypotheses):** if your project maintains a decision-record layer (decisions, prior fixes, recorded rationale), consult it here — it informs *which* contracts are load-bearing and *why* they are shaped this way: flag any recorded decision explaining a contract's current form and any prior fix that touched this symbol; grade findings E2. If none exists, note "no prior art" and proceed.
 3. Set direction (default forward) and confirm depth policy: **direct consumers (depth-1) always; then follow TIGHT edges transitively until a structural boundary** (a test, a stable public API edge, a serialization point, a process/service boundary).
 4. Enumerative self-prompt → update state tracker.
 

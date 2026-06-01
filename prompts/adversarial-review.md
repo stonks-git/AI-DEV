@@ -88,7 +88,7 @@ Read the plan independently. Extract and document:
    - Precondition: what must be true before this step
    - Postcondition: what is guaranteed after this step
    - Does step N's postcondition guarantee step N+1's precondition?
-7. **Chesterton's Fence:** For everything the plan changes, verify understanding of WHY the current approach exists. If the plan doesn't explain why the current state is the way it is, that's a finding.
+7. **Chesterton's Fence + prior-art / doc sweep:** For everything the plan changes, verify understanding of WHY the current approach exists. If the plan doesn't explain why the current state is the way it is, that's a finding. If the project maintains a decision-record layer (decisions, prior fixes, recorded rationale), consult it here — a recorded decision IS the documented "why the fence exists" (it informs the constraints / assumptions matrix above): flag any recorded decision this plan would **contradict** or **revert without superseding**, and any prior fix for the **same problem**; grade findings E2. If none exists, note "no prior art" and proceed.
 
 Self-prompt → update state tracker.
 

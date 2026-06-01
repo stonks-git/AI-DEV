@@ -101,6 +101,10 @@ Self-prompt → update state tracker.
 
 ## Phase 1: INVESTIGATE
 
+### Prior-Art / Doc Sweep (feeds the IS/IS-NOT matrix below)
+
+If your project maintains a decision-record layer (decisions, prior fixes, recorded rationale, client comms), consult it before constraining the problem space (it informs IS-NOT — a recorded "we deliberately don't do X" is an IS-NOT row, and a prior fix for this symptom is a regression signal): flag any prior decision that **rejected** this approach (don't re-propose without a new decision entry) and any prior fix/incident with the **same symptom**; grade findings E2. If none exists, note "no prior art" and proceed.
+
 ### IS/IS-NOT Matrix (adapted for non-code)
 
 | Dimension | IS (observed) | IS NOT (could be, but isn't) |

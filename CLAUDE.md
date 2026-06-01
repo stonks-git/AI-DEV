@@ -87,13 +87,24 @@ Before recommending any approach, tool, pattern, or architecture decision — re
 Before implementing ANY code change, run the **pre-build-explorer** agent first. It finds existing patterns, conventions, and reusable components so new code integrates naturally with the codebase. No coding without precedent analysis.
 
 ## Pre-Modification Doc Gate (NEVER SKIP)
-After Pre-Build Gate, before writing code: read the existing documentation for the area being touched. This prevents re-introducing bugs already solved or contradicting decisions already recorded.
+After Pre-Build Gate, before writing code — **or before committing to a hypothesis/diagnosis in any investigation skill or audit** — read the existing documentation for the area being touched. This prevents re-introducing bugs already solved or contradicting decisions already recorded. The investigation skills (`prompts/investigate.md`, `debug-rca.md`, `troubleshoot.md`, `adversarial-review.md`, `downstream.md`) carry a path-free pointer to this gate; the concrete routing below is the host mapping they point at (D-001).
 
 **Fresh-project escape:** If KB/DJ for the module don't exist yet, note "no prior art" and proceed.
 
+**Doc-sweep routing (the concrete mapping the portable pointers reference):**
+1. Map the subject to tags (`charter.json` `tag_taxonomy`).
+2. Grep Decision Journal headers in `KB/KB_01_architecture.md` for matching `[tag]`; read only those DJ entries.
+3. Read the KB module covering the area per the `KB/KB_index.md` Load column.
+4. Check the current blueprint (`KB/blueprints/BLUEPRINT_INDEX.md` → current version only).
+5. Scan `state/devlog.ndjson` for recent bugfix/decision/refactor entries touching this area.
+6. For client/non-code problems, scan `state/comms.md`.
+- Findings are E2 (documented artifact). **Flag** any prior decision that *rejected* this approach (do not re-propose without a new DJ entry) and any prior fix for the *same symptom* (regression signal).
+
 **Effort scale:**
 - 1-liner trivial (typo, format) → skip this gate
+- Trivial fact-lookup investigation (single file, < 30s answer) → skip this gate
 - 5-30 LOC → KB section for the module + 2-3 tagged DJ entries + relevant memories
+- Multi-hypothesis or cross-module diagnosis / investigation → full doc-sweep routing above
 - Feature / refactor → full KB module + DJ + current blueprint + devlog last 1-2 sessions
 - Cross-module / architectural → exhaustive KB + pre-build-explorer agent
 

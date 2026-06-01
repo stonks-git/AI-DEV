@@ -62,6 +62,24 @@ At each checkpoint: "Has any evidence in my analysis been produced by my own rea
 
 ## Structural Templates (reference material — not inlined)
 
+### Prior-Art / Doc-Sweep Pointer (canonical — inlined PATH-FREE, frame-adapted per skill)
+
+Investigations must consult the host project's decision-record layer (decisions, prior fixes, recorded rationale) before committing to hypotheses/contracts — not just the codebase. To preserve the portability of `prompts/*.md` (CLAUDE.md / README.md both declare protocols "portable / tool-agnostic"), the protocol bodies carry only a **path-free, advisory pointer**. The concrete routing (which files, how to grep DJ by tag, devlog, comms) lives ONLY in the host doc-gate (`CLAUDE.md` Pre-Modification Doc Gate). See decision D-001.
+
+**Canonical pointer (the `<frame>` parenthetical is per-skill — see table):**
+
+> If your project maintains a decision-record layer (decisions, prior fixes, recorded rationale), consult it before [hypotheses/contracts] (<frame>): flag any prior decision that **rejected** this approach (don't re-propose without a new decision entry) and any prior fix for the **same symptom** (regression signal); grade findings E2. If none exists, note "no prior art" and proceed.
+
+| Skill | Inline anchor | `<frame>` |
+|---|---|---|
+| investigate | Phase 0 SCOPE (new step) | informs sub-questions / evidence-sufficiency |
+| debug-rca | Phase 1 INVESTIGATE (step feeding IS/IS-NOT, not displacing it) | informs IS-NOT |
+| troubleshoot | Phase 1 INVESTIGATE (step feeding IS/IS-NOT) | informs IS-NOT |
+| adversarial-review | Phase 1 UNDERSTAND step 7 (Chesterton's Fence), codebase-conditional | informs constraints / assumptions |
+| downstream | Phase 0 SCOPE step 2 (sub-bullet feeding contracts-at-risk) | informs contracts-at-risk |
+
+**Maintainer rule:** the `<frame>` parenthetical is deliberately per-skill — do NOT enforce a byte-identical phrase across all five (that would re-import the hypothesis/IS-NOT frame into the enumerative `downstream`, which it deliberately omits). Verify "same canonical pointer, frame-adapted per skill." NEVER put concrete framework paths (`KB/`, `state/...`, `comms.md`) in protocol bodies — they live only in the host doc-gate. The pointer is intentionally **inert/advisory** when no doc-gate host is loaded (standalone / non-Claude runtime); that is an accepted tradeoff (D-001), not a bug.
+
 ### Diagnostic Timeout Checklist
 
 Run at every checkpoint phase. Answer each question explicitly:
@@ -244,3 +262,5 @@ Add to the top of each skill protocol:
 ```
 
 The four hypothesis-driven protocols carry the note above verbatim. `downstream` carries a different note (it adapts, rather than syncs, these tables) — see its top-of-file comment. When editing the grading/confidence tables, update those 4 **and** manually port the table change into `prompts/downstream.md`.
+
+The **Prior-Art / Doc-Sweep Pointer** (above) is also carried in all five protocols — but **frame-adapted, not verbatim**: each skill uses its own `<frame>` parenthetical per the pointer table. Treat it like the `downstream` table-port rule: when the canonical pointer changes, update all five inline copies, preserving each skill's `<frame>`. This count ("4 verbatim + downstream adapts") is unchanged by the pointer; the pointer simply has five frame-adapted homes.

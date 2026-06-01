@@ -79,6 +79,7 @@ Before investigating, define the boundaries:
 1. **State the question precisely.** Vague questions produce vague answers. Refine with the user if needed.
 2. **Set evidence sufficiency conditions BEFORE investigating.** What evidence would constitute a complete answer? Define this now — not after finding something that feels sufficient.
 3. **Decompose into sub-questions** with explicit checklists. For each sub-question, state what evidence would answer it.
+4. **Prior-art / doc sweep.** If your project maintains a decision-record layer (decisions, prior fixes, recorded rationale), consult it now (it informs your sub-questions / evidence-sufficiency conditions): flag any prior decision that **rejected** this line of inquiry and any prior finding on the **same question** (don't re-derive it); grade findings E2. If none exists, note "no prior art" and proceed. (Consult here, in SCOPE — not in HYPOTHESIZE — so prior answers shape what to ask without biasing hypothesis generation.)
 
 Self-prompt → update state tracker.
 

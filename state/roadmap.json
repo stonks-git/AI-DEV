@@ -5,6 +5,12 @@
     "session": 0
   },
   "open_questions": [],
-  "decisions": [],
+  "decisions": [
+    {
+      "id": "D-001",
+      "summary": "Investigation/diagnostic/audit skills must consult the project decision-record layer (KB, DJ, devlog, blueprint, comms), not just code. Split by coupling level: portable prompts/*.md carry a PATH-FREE, frame-adapted advisory pointer; the concrete routing lives ONLY in the host doc-gate (CLAUDE.md Pre-Modification Doc Gate, broadened to fire before hypotheses/diagnosis); KB_index untouched. Accepted tradeoffs: the pointer is advisory not enforced, and inert outside a doc-gate host (standalone/non-Claude runtime); Explore/Plan-class subagents do not inherit CLAUDE.md so the gate does not reach them. No blueprint version, no DJ entry (nothing superseded; mirrors the existing-skill precedent set by the downstream skill).",
+      "status": "accepted"
+    }
+  ],
   "tasks": []
 }
