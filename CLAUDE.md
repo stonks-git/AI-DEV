@@ -207,6 +207,7 @@ If you don't remember current task/recent files/decisions: **STOP.** Follow Boot
 - Agent stubs: `.claude/agents/` — lightweight registration files for Claude Code. Point to full protocols in `prompts/`.
 - Full protocols: `prompts/` — portable behavior contracts. Usable by any tool, not just Claude Code.
 - Investigation skills: `.claude/skills/<name>/SKILL.md` stubs → `prompts/<name>.md` protocols. Five skills: investigate, debug-rca, troubleshoot, adversarial-review (hypothesis-driven, convergent), and downstream (enumerative, divergent — maps pre-change code coupling / blast radius).
+- State-write skills (mutate `state/`, unlike the read-only investigation skills above): `capture-task` — collision-checked, non-destructive task capture into `state/roadmap.json` via the deterministic `taskmaster add` command (stub `.claude/skills/capture-task/SKILL.md` → `prompts/capture-task.md`); and `doc` — documents completed work across state files (`.claude/skills/doc/SKILL.md`, inlined protocol).
 - Audit orchestrator: `prompts/auditors/runner.md` — manual use prompt for running full audit sequences. Not a subagent (can't call sub-subagents).
 - Supervisor contract: `prompts/supervisor.md`
 - Project workflows: `workflows/` — on-demand project-specific workflow templates (deploy ceremonies, architecture checks, custom gates). Loaded when task matches.

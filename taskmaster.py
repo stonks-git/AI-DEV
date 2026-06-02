@@ -10,11 +10,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
+import tempfile
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -41,6 +44,65 @@ def _read_json(path: Path) -> Any:
         raise FileNotFoundError(f"Missing file: {path}") from None
     except json.JSONDecodeError as exc:
         raise ValueError(f"Invalid JSON in {path}: {exc}") from None
+
+
+def _write_json_atomic(path: Path, data: Any) -> None:
+    """Write *data* as pretty JSON to *path* atomically.
+
+    Writes to a temp file in the SAME directory, then ``os.replace`` (atomic on a
+    single filesystem) over the target. This is what makes the capture-task write
+    crash-safe: a failure mid-write can never leave a half-written / corrupted
+    ``roadmap.json`` — the original stays intact until the atomic swap. The temp
+    file is always cleaned up on failure so no litter is left behind.
+
+    Indentation/encoding match the existing state files (2-space indent, UTF-8,
+    non-ASCII preserved, trailing newline).
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # mkstemp in the target's own dir guarantees os.replace stays on one filesystem (atomic).
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=path.name + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(data, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+        os.replace(tmp, path)
+    except BaseException:
+        # Never leave a stranded temp file behind on any failure (including interrupts).
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+
+
+def _make_logger(debug: bool, log_path: Path) -> tuple[Callable[..., None], Any]:
+    """Build a ``log(msg, debug_only=False)`` helper per the project --debug rule.
+
+    Returns ``(log, handle)``. Caller MUST close *handle* (if not None) when done.
+
+    - Without ``--debug``: only non-``debug_only`` messages print to stdout (minimal output);
+      nothing is written to a file.
+    - With ``--debug``: every message (including ``debug_only`` micro-steps) is timestamped,
+      printed to stdout AND appended to *log_path*, flushed after each line so a
+      ``tail -f`` sees progress in real time.
+    """
+    handle = None
+    if debug:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        handle = log_path.open("a", encoding="utf-8")
+
+    def log(msg: str, debug_only: bool = False) -> None:
+        # Verbose micro-steps are suppressed entirely unless --debug is on.
+        if debug_only and not debug:
+            return
+        if debug:
+            stamped = f"{datetime.now(timezone.utc).isoformat()} | {msg}"
+            print(stamped)
+            if handle is not None:
+                handle.write(stamped + "\n")
+                handle.flush()  # real-time tail -f
+        else:
+            print(msg)
+
+    return log, handle
 
 
 def _is_nonempty_str(value: Any) -> bool:
@@ -337,6 +399,44 @@ def validate_roadmap(roadmap: Any) -> tuple[list[ValidationIssue], list[dict[str
     return issues, [task_by_id[task_id] for task_id in ordered]
 
 
+def add_task(roadmap: Any, task: Any) -> tuple[list[ValidationIssue], Any]:
+    """Append *task* to *roadmap*'s task list and validate the combined result.
+
+    PURE function (no I/O) — the testable core of the ``add`` subcommand, mirroring
+    the pure ``validate_roadmap``. Returns ``(issues, new_roadmap)`` where:
+
+    - ``new_roadmap`` is a shallow copy of *roadmap* whose ``tasks`` list is the
+      original tasks plus *task* appended. **Existing task objects are reused by
+      reference and never rebuilt or mutated** — this is what makes capture-task's
+      write provably non-destructive (no LLM retyping of existing rows).
+    - ``issues`` is the full validation of the COMBINED roadmap: duplicate ``id``,
+      missing/cyclic ``depends_on``, and per-task field rules (via ``_validate_task``)
+      are all enforced here, so a malformed or colliding new task is caught before
+      anything is written.
+
+    Callers MUST refuse to persist ``new_roadmap`` if any error-level issue is present.
+    Tag-taxonomy membership is NOT checked here (taskmaster never validates task tags —
+    tasks carry no tag field); that check lives in the capture-task skill protocol.
+    """
+    issues: list[ValidationIssue] = []
+    if not _expect_type(roadmap, dict, "roadmap", issues):
+        return issues, roadmap
+    if not _expect_type(task, dict, "task", issues):
+        return issues, roadmap
+
+    existing = roadmap.get("tasks")
+    if not isinstance(existing, list):
+        issues.append(ValidationIssue("error", "roadmap.tasks: expected list"))
+        return issues, roadmap
+
+    new_roadmap = dict(roadmap)
+    new_roadmap["tasks"] = list(existing) + [task]  # existing rows preserved by reference
+
+    roadmap_issues, _ = validate_roadmap(new_roadmap)
+    issues.extend(roadmap_issues)
+    return issues, new_roadmap
+
+
 def _format_issues(issues: Iterable[ValidationIssue]) -> str:
     """Format validation issues as ERROR/WARN prefixed lines for CLI output."""
     lines = []
@@ -456,6 +556,103 @@ def cmd_steps(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_add(args: argparse.Namespace) -> int:
+    """CLI handler: add ONE new task (read from ``--file`` as JSON) to roadmap.json.
+
+    This is the deterministic, non-destructive write path used by the ``/capture-task``
+    skill — the skill must never hand-edit roadmap.json. Sequence:
+
+    1. **Baseline-validate** the current roadmap. If it already has errors, abort and
+       say so — never blame the user's new task for pre-existing corruption.
+    2. Read the candidate task object from ``--file``.
+    3. ``add_task`` appends it and validates the combined set in memory; on any error,
+       write NOTHING and exit 1.
+    4. **Structural-preservation guard:** the new task list must equal the old list
+       plus exactly one element (existing rows byte-identical). Deterministic backstop
+       for the non-destructive guarantee.
+    5. Atomic write (temp + ``os.replace``), then re-validate the on-disk file as a
+       final gate. Never claims success without that confirmation.
+
+    Honors ``--debug`` (logs every micro-step to data/taskmaster_debug.log + stdout).
+    Returns 0 on success, 1 on any rejection/error.
+    """
+    roadmap_path = STATE_DIR / "roadmap.json"
+    log_path = BASE_DIR / "data" / "taskmaster_debug.log"
+    log, handle = _make_logger(args.debug, log_path)
+    try:
+        log(f"add: start (roadmap={roadmap_path}, task_file={args.file}, debug={args.debug})", debug_only=True)
+
+        # Step 1: baseline — the roadmap must be valid BEFORE we touch it.
+        try:
+            roadmap = _read_json(roadmap_path)
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"ERROR: {exc}")
+            log(f"add: cannot read roadmap.json: {exc}", debug_only=True)
+            return 1
+        log("add: read roadmap.json", debug_only=True)
+
+        baseline_issues, _ = validate_roadmap(roadmap)
+        baseline_errors = [i for i in baseline_issues if i.level == "error"]
+        if baseline_errors:
+            print(_format_issues(baseline_errors))
+            print("ERROR: roadmap.json already has errors — fix those before adding a task (not blamed on the new task).")
+            log(f"add: baseline failed with {len(baseline_errors)} error(s)", debug_only=True)
+            return 1
+        log("add: baseline validation clean", debug_only=True)
+
+        # Step 2: read the candidate task object.
+        try:
+            task = _read_json(Path(args.file))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"ERROR: {exc}")
+            log(f"add: cannot read task file: {exc}", debug_only=True)
+            return 1
+        task_id = task.get("id") if isinstance(task, dict) else "?"
+        log(f"add: read candidate task (id={task_id})", debug_only=True)
+
+        # Step 3: append + validate combined, in memory.
+        issues, new_roadmap = add_task(roadmap, task)
+        errors = [i for i in issues if i.level == "error"]
+        if errors:
+            print(_format_issues(issues))
+            print("ERROR: new task rejected — roadmap.json NOT modified.")
+            log(f"add: candidate rejected with {len(errors)} error(s)", debug_only=True)
+            return 1
+        log("add: combined validation clean", debug_only=True)
+
+        # Step 4: structural-preservation guard.
+        old_tasks = roadmap.get("tasks", [])
+        new_tasks = new_roadmap.get("tasks", [])
+        if len(new_tasks) != len(old_tasks) + 1 or new_tasks[: len(old_tasks)] != old_tasks:
+            print("ERROR: structural-preservation guard failed (existing tasks changed) — NOT modified.")
+            log("add: preservation guard failed", debug_only=True)
+            return 1
+        log("add: preservation guard passed", debug_only=True)
+
+        # Step 5: atomic write + post-write re-validation.
+        _write_json_atomic(roadmap_path, new_roadmap)
+        log("add: wrote roadmap.json atomically", debug_only=True)
+
+        written = _read_json(roadmap_path)
+        post_issues, _ = validate_roadmap(written)
+        post_errors = [i for i in post_issues if i.level == "error"]
+        if post_errors:
+            # Should be unreachable (validated in memory), but never claim success blindly.
+            print(_format_issues(post_issues))
+            print("ERROR: post-write validation failed.")
+            log("add: post-write validation FAILED", debug_only=True)
+            return 1
+
+        print(f"Added task {task_id} ({len(new_tasks)} task(s) total).")
+        if post_issues:  # warnings only at this point
+            print(_format_issues(post_issues))
+        log(f"add: success (id={task_id}, total={len(new_tasks)})", debug_only=True)
+        return 0
+    finally:
+        if handle is not None:
+            handle.close()
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the argparse CLI parser with validate/order/ready/steps subcommands."""
     parser = argparse.ArgumentParser(
@@ -476,6 +673,19 @@ def build_parser() -> argparse.ArgumentParser:
     steps = sub.add_parser("steps", help="Show decomposition steps for a task.")
     steps.add_argument("task_id", help="Task ID to show steps for (e.g., T-001)")
     steps.set_defaults(func=cmd_steps)
+
+    # `add` is the ONLY state-mutating subcommand; it is the deterministic write path
+    # the /capture-task skill uses instead of hand-editing roadmap.json. It alone
+    # carries --debug (per the project's mandatory script-debug rule); the read-only
+    # commands above do not mutate state and are intentionally left without it.
+    add = sub.add_parser("add", help="Add one new task (from a JSON file) to roadmap.json.")
+    add.add_argument("--file", required=True, help="Path to a JSON file containing ONE task object.")
+    add.add_argument(
+        "--debug",
+        action="store_true",
+        help="Log a hyper-precise trace of every step to data/taskmaster_debug.log and stdout.",
+    )
+    add.set_defaults(func=cmd_add)
 
     return parser
 

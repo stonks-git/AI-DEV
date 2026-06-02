@@ -83,9 +83,13 @@ git log --oneline -3
 
 ## 8. roadmap.json (IF APPLICABLE)
 
-Update `state/roadmap.json` only if:
+**Adding a NEW task? Use `/capture-task` — never hand-edit `roadmap.json` to add a task.**
+`/capture-task` runs the collision sweep and writes via the deterministic `taskmaster add`
+command (atomic + validated + structurally non-destructive). Hand-editing the `tasks` array
+risks silently dropping or mutating an existing task — a corruption `validate` cannot detect.
+
+Direct edits to `state/roadmap.json` from `/doc` are limited to changes on **existing** tasks:
 - A task changes status (doing -> done)
-- New task added
 - Dependencies changed
 - Decision status changed (including superseded)
 

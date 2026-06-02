@@ -14,6 +14,7 @@
 | 06 | `prompts/troubleshoot.md` | Troubleshoot skill protocol | rca, investigation | on-demand |
 | 07 | `prompts/adversarial-review.md` | Adversarial Review skill protocol | adversarial | on-demand |
 | 08 | `prompts/downstream.md` | Downstream skill protocol — pre-change coupling / blast-radius mapping (enumerative, not hypothesis-driven) | impact | on-demand |
+| 09 | `prompts/capture-task.md` | Capture-task skill protocol — collision-checked, non-destructive task capture into `roadmap.json` (write via `taskmaster add`) | planning | on-demand |
 
 <!--
 NOTE: KB_index routes KB/ files only. State files (charter.json, roadmap.json,
