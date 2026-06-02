@@ -87,7 +87,7 @@ Before recommending any approach, tool, pattern, or architecture decision — re
 Before implementing ANY code change, run the **pre-build-explorer** agent first. It finds existing patterns, conventions, and reusable components so new code integrates naturally with the codebase. No coding without precedent analysis.
 
 ## Pre-Modification Doc Gate (NEVER SKIP)
-After Pre-Build Gate, before writing code — **or before committing to a hypothesis/diagnosis in any investigation skill or audit** — read the existing documentation for the area being touched. This prevents re-introducing bugs already solved or contradicting decisions already recorded. The investigation skills (`prompts/investigate.md`, `debug-rca.md`, `troubleshoot.md`, `adversarial-review.md`, `downstream.md`) carry a path-free pointer to this gate; the concrete routing below is the host mapping they point at (D-001).
+After Pre-Build Gate, before writing code — **or before committing to a hypothesis/diagnosis in any investigation skill or audit** — read the existing documentation for the area being touched. This prevents re-introducing bugs already solved or contradicting decisions already recorded. The investigation skills (`prompts/investigate.md`, `debug-rca.md`, `troubleshoot.md`, `adversarial-review.md`, `downstream.md`) carry a path-free pointer to this gate; the concrete routing below is the host mapping they point at.
 
 **Fresh-project escape:** If KB/DJ for the module don't exist yet, note "no prior art" and proceed.
 

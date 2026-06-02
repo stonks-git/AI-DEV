@@ -64,7 +64,7 @@ At each checkpoint: "Has any evidence in my analysis been produced by my own rea
 
 ### Prior-Art / Doc-Sweep Pointer (canonical — inlined PATH-FREE, frame-adapted per skill)
 
-Investigations must consult the host project's decision-record layer (decisions, prior fixes, recorded rationale) before committing to hypotheses/contracts — not just the codebase. To preserve the portability of `prompts/*.md` (CLAUDE.md / README.md both declare protocols "portable / tool-agnostic"), the protocol bodies carry only a **path-free, advisory pointer**. The concrete routing (which files, how to grep DJ by tag, devlog, comms) lives ONLY in the host doc-gate (`CLAUDE.md` Pre-Modification Doc Gate). See decision D-001.
+Investigations must consult the host project's decision-record layer (decisions, prior fixes, recorded rationale) before committing to hypotheses/contracts — not just the codebase. To preserve the portability of `prompts/*.md` (CLAUDE.md / README.md both declare protocols "portable / tool-agnostic"), the protocol bodies carry only a **path-free, advisory pointer**. The concrete routing (which files, how to grep DJ by tag, devlog, comms) lives ONLY in the host doc-gate (`CLAUDE.md` Pre-Modification Doc Gate).
 
 **Canonical pointer (the `<frame>` parenthetical is per-skill — see table):**
 
@@ -78,7 +78,7 @@ Investigations must consult the host project's decision-record layer (decisions,
 | adversarial-review | Phase 1 UNDERSTAND step 7 (Chesterton's Fence), codebase-conditional | informs constraints / assumptions |
 | downstream | Phase 0 SCOPE step 2 (sub-bullet feeding contracts-at-risk) | informs contracts-at-risk |
 
-**Maintainer rule:** the `<frame>` parenthetical is deliberately per-skill — do NOT enforce a byte-identical phrase across all five (that would re-import the hypothesis/IS-NOT frame into the enumerative `downstream`, which it deliberately omits). Verify "same canonical pointer, frame-adapted per skill." NEVER put concrete framework paths (`KB/`, `state/...`, `comms.md`) in protocol bodies — they live only in the host doc-gate. The pointer is intentionally **inert/advisory** when no doc-gate host is loaded (standalone / non-Claude runtime); that is an accepted tradeoff (D-001), not a bug.
+**Maintainer rule:** the `<frame>` parenthetical is deliberately per-skill — do NOT enforce a byte-identical phrase across all five (that would re-import the hypothesis/IS-NOT frame into the enumerative `downstream`, which it deliberately omits). Verify "same canonical pointer, frame-adapted per skill." NEVER put concrete framework paths (`KB/`, `state/...`, `comms.md`) in protocol bodies — they live only in the host doc-gate. The pointer is intentionally **inert/advisory** when no doc-gate host is loaded (standalone / non-Claude runtime); that is an accepted tradeoff, not a bug.
 
 ### Diagnostic Timeout Checklist
 
