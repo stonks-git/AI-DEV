@@ -1,9 +1,22 @@
 {
-  "meta": {
-    "status": "draft",
-    "last_updated": "",
-    "session": 0
+  "_note": "Format reference, ignored by taskmaster.py. Put real items in open_questions / decisions / tasks below (they start empty).",
+  "_example": {
+    "task": {
+      "id": "T-000",
+      "title": "imperative title",
+      "intent": "why this task exists",
+      "deliverable": "what exists when done",
+      "acceptance_criteria": ["objective done-check"],
+      "verification": ["command or observable result"],
+      "priority": "P2",
+      "status": "todo",
+      "owner": "ai",
+      "depends_on": []
+    },
+    "decision": {"id": "D-000", "summary": "what was decided and why", "status": "accepted"},
+    "open_question": {"id": "Q-000", "question": "the open question", "blocking": [], "status": "open"}
   },
+  "meta": {"status": "draft", "last_updated": "", "session": 0},
   "open_questions": [],
   "decisions": [],
   "tasks": []
