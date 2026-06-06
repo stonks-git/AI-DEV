@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(python3 taskmaster.py:*)",
+      "Bash(python3 timesheet.py:*)",
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(git add:*)",

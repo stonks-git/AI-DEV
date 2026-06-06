@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 .venv/
 
+# Debug logs (taskmaster --debug / timesheet --debug write here)
+data/*_debug.log
+
 # IDE
 .idea/
 .vscode/

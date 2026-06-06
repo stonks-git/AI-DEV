@@ -2,7 +2,7 @@
 
 > Fill project description here after bootstrap.
 
-State: `state/` (charter.json, roadmap.json, devlog.ndjson, handoff.md, plans/, schema_log.md, comms.md).
+State: `state/` (charter.json, roadmap.json, devlog.ndjson, timesheet.ndjson, handoff.md, plans/, schema_log.md, comms.md).
 
 ## Bootstrap (single origin — start here)
 1. This file (CLAUDE.md) — framework rules, gates, loading discipline
@@ -138,6 +138,18 @@ See `state/plans/README.md` for full template and workflow.
 Append single-line JSON to `state/devlog.ndjson` for: accepted decisions, scope changes, completed milestones, major blockers, blueprint versions, Decision Journal entries.
 
 Event types: `feature`, `bugfix`, `refactor`, `kb_update`, `decision`, `handoff`, `verification`, `human_review`, `blueprint`, `dj_entry`.
+
+## Time Tracking
+Manual work-time tracking lives in `timesheet.py` (separate from the devlog on purpose — punches are raw time data, not schema-validated events). Append-only journal at `state/timesheet.ndjson`; punch-out appends a line, never edits the punch-in. Commands: `python3 timesheet.py in [--note "..."]` / `out [--note "..."]` / `status` / `report`. Punches alternate strictly (can't punch in twice, or out when not in). Inside a session you can punch via `! python3 timesheet.py in`. This is the human owner's own ledger — it is NOT one of the mandatory gates and is never required to mark a task done.
+
+**Agent behavior — punch on request.** When the user tells you to punch in/out in plain language, run the matching `timesheet.py` command yourself (via Bash) and report the one-line result. Treat these as the trigger:
+- "punch in" / "clock in" / "start the timer" / "I'm starting work" → `python3 timesheet.py in` (pass `--note "<text>"` if they mention what they're working on).
+- "punch out" / "clock out" / "stop the timer" / "I'm done for now" → `python3 timesheet.py out`.
+- "am I punched in?" / "timer status" → `python3 timesheet.py status`.
+- "how long have I worked" / "time report" / "timesheet" → `python3 timesheet.py report`.
+- "change the note" / "relabel" / "I'm switching to X" → **re-punch**: run `python3 timesheet.py out` then immediately `python3 timesheet.py in --note "<new text>"`, back-to-back in one step. The journal is append-only — there is no in-place note edit, so relabeling = close the current session and open a fresh one with the new note. Running both back-to-back keeps the gap to ~1 second (no time lost); it does record two sessions, which is the correct semantics when the user is genuinely switching tasks. Tell the user it logged as two sessions.
+
+Run the command and relay its output verbatim — do not hand-edit `state/timesheet.ndjson`. If a punch is rejected (already in / not in), surface the script's message; don't retry or force it. Do not punch unprompted (no auto-punch on session start) — only when the user asks.
 
 ## Checkpoint
 Save progress BEFORE autocompact eats it. Trigger: 3+ files read without save, important decision, task completed.

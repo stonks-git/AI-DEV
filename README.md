@@ -31,11 +31,13 @@ This repo is a **framework template** -- not a project. Clone it to start a new 
 ```
 CLAUDE.md                    # Single origin -- framework rules, gates, bootstrap sequence
 taskmaster.py                # State validator + task manager (validate, order, ready, steps)
+timesheet.py                 # Manual work-time tracker (punch in/out, status, report)
 
 state/
   charter.json               # Project identity, constraints, tag taxonomy
   roadmap.json               # Tasks (DAG), decisions, open questions
   devlog.ndjson              # Append-only event journal (NDJSON)
+  timesheet.ndjson           # Append-only punch journal (work time) -- ships empty
   handoff.md                 # Session context, memory marker, git status
 
 KB/
@@ -120,6 +122,30 @@ Tasks in `roadmap.json` can optionally include decomposition fields:
 ```
 
 Fields: `steps` (array), `complexity` (string), and per-step: `step`, `title`, `status`, `critical`, `deliverable`, `verify`, `rollback`.
+
+### Timesheet
+
+`timesheet.py` is a zero-dependency manual work-time tracker, kept separate from the
+devlog on purpose: the devlog is a *schema-validated event journal* (decisions,
+features, bugfixes), whereas punches are raw time data that would otherwise trip
+taskmaster's devlog event allow-list. Like the devlog, the timesheet is an
+**append-only** journal (`state/timesheet.ndjson`) — a punch-out is a new appended
+line, never an edit to the punch-in line. Totals are computed on read, never stored.
+
+```bash
+python3 timesheet.py in  --note "auth work"   # start a session (optional note)
+python3 timesheet.py out                       # end it; prints the session duration
+python3 timesheet.py status                    # are you punched in? for how long?
+python3 timesheet.py report                    # sessions + per-day totals + grand total
+```
+
+Within a Claude Code session you can punch without leaving the prompt: `! python3 timesheet.py in`.
+
+- Punches alternate strictly: `in` refuses if already in, `out` refuses if not in (keeps the journal consistent for reporting).
+- Timestamps are local wall-clock with UTC offset (e.g. `2026-06-06T09:00:00+03:00`).
+- `report` flags any open (unmatched) punch-in separately, so an unclosed session never silently corrupts totals.
+- Sessions are attributed to the calendar date they *started* (a session crossing midnight counts toward its start day).
+- `in` / `out` honor `--debug` (full trace to `data/timesheet_debug.log`, per the project's script-debug rule); read-only `status` / `report` do not mutate state and omit it.
 
 ### Charter Fields Reference
 
